@@ -1,0 +1,97 @@
+{
+  "projectsZh": [
+    {
+      "id": "webox",
+      "title": "微盒应用",
+      "description": "微盒项目所有正式版本合并后的工程文件",
+      "tags": ["Objective-C", "A、B面", "正式"],
+      "link": "/Users/mengjunzhu/Desktop/ABBB"
+    },
+    {
+      "id": "whatsbox",
+      "title": "WhatsBox应用",
+      "description": "WhatsBox项目所有正式版本合并后的工程文件",
+      "tags": ["Objective-C", "A、B面", "正式"],
+      "link": "/Users/mengjunzhu/Desktop/WhatsBox_AB"
+    },
+    {
+      "id": "oaa",
+      "title": "OAA",
+      "description": "两个项目OAA测试引擎的动态、静态文件",
+      "tags": ["OAA", "引擎", "测试"],
+      "link": "/Users/mengjunzhu/Desktop/OAA"
+    },
+    {
+      "id": "pure-a",
+      "title": "纯A应用",
+      "description": "还未合并的纯A应用工程文件",
+      "tags": ["A面", "待合并"],
+      "link": "/Users/mengjunzhu/Desktop/NewApp"
+    },
+    {
+      "id": "landing",
+      "title": "落地页",
+      "description": "微盒、WhatsBox的落地页项目，用分支管理不同版本的工程文件",
+      "tags": ["html", "css", "js"],
+      "link": "/Users/mengjunzhu/Desktop/Landing"
+    }
+  ],
+  "projectsEn": [
+    {
+      "id": "webox",
+      "title": "WeBox App",
+      "description": "Merged engineering files for all production releases of the WeBox project.",
+      "tags": ["Objective-C", "A/B Sides", "Production"],
+      "link": "/Users/mengjunzhu/Desktop/ABBB"
+    },
+    {
+      "id": "whatsbox",
+      "title": "WhatsBox App",
+      "description": "Merged engineering files for all production releases of the WhatsBox project.",
+      "tags": ["Objective-C", "A/B Sides", "Production"],
+      "link": "/Users/mengjunzhu/Desktop/WhatsBox_AB"
+    },
+    {
+      "id": "oaa",
+      "title": "OAA",
+      "description": "Dynamic and static files of the OAA testing engine used by both projects.",
+      "tags": ["OAA", "Engine", "Testing"],
+      "link": "/Users/mengjunzhu/Desktop/OAA"
+    },
+    {
+      "id": "pure-a",
+      "title": "Pure A App",
+      "description": "Engineering files for the standalone A-side app that has not been merged yet.",
+      "tags": ["A Side", "Pending Merge"],
+      "link": "/Users/mengjunzhu/Desktop/NewApp"
+    },
+    {
+      "id": "landing",
+      "title": "Landing Page",
+      "description": "Landing page project for WeBox and WhatsBox, using branches to manage different versions of the engineering files.",
+      "tags": ["html", "css", "js"],
+      "link": "/Users/mengjunzhu/Desktop/Landing"
+    }
+  ],
+  "directoryEntryIgnoreRules": {
+    "exactNames": ["Thumbs.db", "desktop.ini"],
+    "startsWith": ["."]
+  },
+  "site": {
+    "zh": {
+      "siteName": "个人网站",
+      "ownerName": "阿七",
+      "heroTagline": "这个 BUG 能改！从定位到修复再到验证，问题会被稳稳解决。"
+    },
+    "en": {
+      "siteName": "Personal Website",
+      "ownerName": "SevenA",
+      "heroTagline": "This bug can be fixed—trace it, patch it, verify it, and close it cleanly."
+    },
+    "links": {
+      "email": "mailto:your.email@example.com",
+      "github": "https://github.com/SevenAAAAAAA",
+      "linkedin": "https://www.linkedin.com/in/yourname"
+    }
+  }
+}
