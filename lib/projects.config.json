@@ -4,36 +4,86 @@
       "id": "webox",
       "title": "微盒应用",
       "description": "微盒项目所有正式版本合并后的工程文件",
-      "tags": ["Objective-C", "A、B面", "正式"],
+      "tags": [
+        "Objective-C",
+        "A、B面",
+        "正式"
+      ],
       "link": "/Users/mengjunzhu/Desktop/ABBB"
     },
     {
       "id": "whatsbox",
       "title": "WhatsBox应用",
       "description": "WhatsBox项目所有正式版本合并后的工程文件",
-      "tags": ["Objective-C", "A、B面", "正式"],
+      "tags": [
+        "Objective-C",
+        "A、B面",
+        "正式"
+      ],
       "link": "/Users/mengjunzhu/Desktop/WhatsBox_AB"
     },
     {
       "id": "oaa",
       "title": "OAA",
       "description": "两个项目OAA测试引擎的动态、静态文件",
-      "tags": ["OAA", "引擎", "测试"],
+      "tags": [
+        "OAA",
+        "引擎",
+        "测试"
+      ],
       "link": "/Users/mengjunzhu/Desktop/OAA"
     },
     {
       "id": "pure-a",
       "title": "纯A应用",
       "description": "还未合并的纯A应用工程文件",
-      "tags": ["A面", "待合并"],
+      "tags": [
+        "A面",
+        "待合并"
+      ],
       "link": "/Users/mengjunzhu/Desktop/NewApp"
     },
     {
       "id": "landing",
       "title": "落地页",
       "description": "微盒、WhatsBox的落地页项目，用分支管理不同版本的工程文件",
-      "tags": ["html", "css", "js"],
+      "tags": [
+        "html",
+        "css",
+        "js"
+      ],
       "link": "/Users/mengjunzhu/Desktop/Landing"
+    },
+    {
+      "id": "webox-dev",
+      "title": "微盒开发",
+      "description": "微盒项目的开发版本",
+      "tags": [
+        "Objective-C",
+        "B面",
+        "开发"
+      ],
+      "link": "/Users/mengjunzhu/Documents/GitHub"
+    },
+    {
+      "id": "whatsbox-dev",
+      "title": "WhatsBox开发",
+      "description": "WhatsBox项目的开发版本",
+      "tags": [
+        "Objective-C",
+        "B面",
+        "开发"
+      ],
+      "link": "/Users/mengjunzhu/Documents/AppHub"
+    },
+    {
+      "id": "potato",
+      "title": "土豆自制项目",
+      "description": "只是土豆🥔",
+      "tags": [
+        "🥔"
+      ],
+      "link": "/Users/mengjunzhu/Desktop/PotatoProject"
     }
   ],
   "projectsEn": [
@@ -41,41 +91,96 @@
       "id": "webox",
       "title": "WeBox App",
       "description": "Merged engineering files for all production releases of the WeBox project.",
-      "tags": ["Objective-C", "A/B Sides", "Production"],
+      "tags": [
+        "Objective-C",
+        "A/B Sides",
+        "Production"
+      ],
       "link": "/Users/mengjunzhu/Desktop/ABBB"
     },
     {
       "id": "whatsbox",
       "title": "WhatsBox App",
       "description": "Merged engineering files for all production releases of the WhatsBox project.",
-      "tags": ["Objective-C", "A/B Sides", "Production"],
+      "tags": [
+        "Objective-C",
+        "A/B Sides",
+        "Production"
+      ],
       "link": "/Users/mengjunzhu/Desktop/WhatsBox_AB"
     },
     {
       "id": "oaa",
       "title": "OAA",
       "description": "Dynamic and static files of the OAA testing engine used by both projects.",
-      "tags": ["OAA", "Engine", "Testing"],
+      "tags": [
+        "OAA",
+        "Engine",
+        "Testing"
+      ],
       "link": "/Users/mengjunzhu/Desktop/OAA"
     },
     {
       "id": "pure-a",
       "title": "Pure A App",
       "description": "Engineering files for the standalone A-side app that has not been merged yet.",
-      "tags": ["A Side", "Pending Merge"],
+      "tags": [
+        "A Side",
+        "Pending Merge"
+      ],
       "link": "/Users/mengjunzhu/Desktop/NewApp"
     },
     {
       "id": "landing",
       "title": "Landing Page",
       "description": "Landing page project for WeBox and WhatsBox, using branches to manage different versions of the engineering files.",
-      "tags": ["html", "css", "js"],
+      "tags": [
+        "html",
+        "css",
+        "js"
+      ],
       "link": "/Users/mengjunzhu/Desktop/Landing"
+    },
+    {
+      "id": "webox-dev",
+      "title": "WeBox Dev",
+      "description": "Dev version for WeBox",
+      "tags": [
+        "Objective-C",
+        "B side",
+        "Dev"
+      ],
+      "link": "/Users/mengjunzhu/Documents/GitHub"
+    },
+    {
+      "id": "whatsbox-dev",
+      "title": "WhatsBox Dev",
+      "description": "Dev version for WhatsBox",
+      "tags": [
+        "Objective-C",
+        "B side",
+        "Dev"
+      ],
+      "link": "/Users/mengjunzhu/Documents/AppHub"
+    },
+    {
+      "id": "potato",
+      "title": "Potato Projects",
+      "description": "Just Potato🥔",
+      "tags": [
+        "🥔"
+      ],
+      "link": "/Users/mengjunzhu/Desktop/PotatoProject"
     }
   ],
   "directoryEntryIgnoreRules": {
-    "exactNames": ["Thumbs.db", "desktop.ini"],
-    "startsWith": ["."]
+    "exactNames": [
+      "Thumbs.db",
+      "desktop.ini"
+    ],
+    "startsWith": [
+      "."
+    ]
   },
   "site": {
     "zh": {

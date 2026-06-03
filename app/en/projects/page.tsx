@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { projectsEn } from "@/lib/data";
+import { getProjectsEn } from "@/lib/serverData";
 
 export const metadata: Metadata = {
   title: "Projects",
@@ -14,12 +14,15 @@ export const metadata: Metadata = {
 };
 
 export default function ProjectsEN() {
-  const projects = projectsEn;
+  const projects = getProjectsEn();
   return (
     <section className="mx-auto max-w-6xl px-4 py-16">
       <div className="mb-6 flex items-center justify-between gap-3">
         <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">Projects</h1>
         <div className="flex items-center gap-4 text-sm">
+          <Link href="/en/projects/settings" className="text-primary hover:underline">
+            Settings
+          </Link>
           <Link href="/en/projects/logs" className="text-primary hover:underline">
             Download Logs
           </Link>

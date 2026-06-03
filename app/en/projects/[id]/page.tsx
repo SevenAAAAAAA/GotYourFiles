@@ -3,7 +3,7 @@ import Link from "next/link";
 import path from "node:path";
 import { readdir, stat } from "node:fs/promises";
 import { notFound } from "next/navigation";
-import { projectsEn, shouldIgnoreDirectoryEntry } from "@/lib/data";
+import { getProjectsEn, shouldIgnoreDirectoryEntry } from "@/lib/serverData";
 import DirectoryEntriesList from "@/components/DirectoryEntriesList";
 
 type Params = {
@@ -15,7 +15,7 @@ type SearchParams = {
 };
 
 export async function generateStaticParams() {
-  return projectsEn.map((project) => ({ id: project.id }));
+  return getProjectsEn().map((project) => ({ id: project.id }));
 }
 
 export async function generateMetadata({
@@ -24,7 +24,7 @@ export async function generateMetadata({
   params: Promise<Params>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const project = projectsEn.find((item) => item.id === id);
+  const project = getProjectsEn().find((item) => item.id === id);
 
   if (!project) {
     return { title: "Project Not Found" };
@@ -44,7 +44,7 @@ export default async function ProjectFolderPageEN({
 }) {
   const { id } = await params;
   const { p } = await searchParams;
-  const project = projectsEn.find((item) => item.id === id);
+  const project = getProjectsEn().find((item) => item.id === id);
 
   if (!project) {
     notFound();
@@ -107,6 +107,12 @@ export default async function ProjectFolderPageEN({
               Back
             </Link>
           ) : null}
+          <Link
+            href={currentRelative ? { pathname: `/en/projects/${id}/commits`, query: { p: currentRelative } } : `/en/projects/${id}/commits`}
+            className="text-primary hover:underline"
+          >
+            Local Commits
+          </Link>
           <Link href={{ pathname: "/en/projects/logs", query: { projectId: id } }} className="text-primary hover:underline">
             Download Logs
           </Link>
@@ -138,6 +144,10 @@ export default async function ProjectFolderPageEN({
           filterAllLabel="All types"
           filterFilesLabel="Files only"
           filterFoldersLabel="Folders only"
+          sortLabel="Sort"
+          sortByNameLabel="Name"
+          sortByModifiedLabel="Modified time"
+          sortBySizeLabel="File size"
         />
       )}
     </section>

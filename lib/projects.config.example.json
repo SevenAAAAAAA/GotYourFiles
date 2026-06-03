@@ -1,0 +1,41 @@
+{
+  "projectsZh": [
+    {
+      "id": "example",
+      "title": "示例项目",
+      "description": "这是一个示例项目，请在前端配置页面中替换为你的真实项目",
+      "tags": ["示例"],
+      "link": "/path/to/your/project"
+    }
+  ],
+  "projectsEn": [
+    {
+      "id": "example",
+      "title": "Example Project",
+      "description": "This is an example project. Replace it with your real project on the settings page.",
+      "tags": ["Example"],
+      "link": "/path/to/your/project"
+    }
+  ],
+  "directoryEntryIgnoreRules": {
+    "exactNames": ["Thumbs.db", "desktop.ini"],
+    "startsWith": ["."]
+  },
+  "site": {
+    "zh": {
+      "siteName": "个人网站",
+      "ownerName": "阿七",
+      "heroTagline": "这个 BUG 能改！从定位到修复再到验证，问题会被稳稳解决。"
+    },
+    "en": {
+      "siteName": "Personal Website",
+      "ownerName": "SevenA",
+      "heroTagline": "This bug can be fixed—trace it, patch it, verify it, and close it cleanly."
+    },
+    "links": {
+      "email": "mailto:your.email@example.com",
+      "github": "https://github.com/SevenAAAAAAA",
+      "linkedin": "https://www.linkedin.com/in/yourname"
+    }
+  }
+}

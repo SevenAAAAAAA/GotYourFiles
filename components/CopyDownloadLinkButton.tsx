@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export default function CopyDownloadLinkButton({
   href,
@@ -12,6 +12,43 @@ export default function CopyDownloadLinkButton({
   copiedLabel: string;
 }) {
   const [copied, setCopied] = useState(false);
+  const [copyOrigin, setCopyOrigin] = useState(() => (typeof window !== "undefined" ? window.location.origin : ""));
+
+  function isLocalHostname(hostname: string) {
+    return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1" || hostname === "[::1]";
+  }
+
+  const resolveCopyOrigin = useCallback(async () => {
+    const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+    if (configuredSiteUrl) {
+      try {
+        return new URL(configuredSiteUrl).origin;
+      } catch {}
+    }
+    if (!isLocalHostname(window.location.hostname)) {
+      return window.location.origin;
+    }
+    try {
+      const res = await fetch("/api/system/share-origin", { cache: "no-store" });
+      const data = await res.json().catch(() => null);
+      if (res.ok && typeof data?.origin === "string" && data.origin) {
+        return data.origin;
+      }
+    } catch {}
+    return window.location.origin;
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    const fallbackOrigin = copyOrigin || window.location.origin;
+    resolveCopyOrigin().then((origin) => {
+      if (!active) return;
+      setCopyOrigin(origin || fallbackOrigin);
+    });
+    return () => {
+      active = false;
+    };
+  }, [copyOrigin, resolveCopyOrigin]);
 
   function copyByExecCommand(text: string) {
     const textarea = document.createElement("textarea");
@@ -27,7 +64,7 @@ export default function CopyDownloadLinkButton({
   }
 
   async function handleCopy() {
-    const absoluteHref = new URL(href, window.location.origin).toString();
+    const absoluteHref = new URL(href, copyOrigin || window.location.origin).toString();
     try {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(absoluteHref);

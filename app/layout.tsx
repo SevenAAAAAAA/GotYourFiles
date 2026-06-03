@@ -5,8 +5,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ThemeToggle from "@/components/ThemeToggle";
 import LangSwitcher from "@/components/LangSwitcher";
+import MoreFeatures from "@/components/MoreFeatures";
 import { SiteBrandLink, SiteOwnerName } from "@/components/SiteIdentity";
-import { siteZh, siteLinks } from "@/lib/data";
+import { getSiteEn, getSiteLinks, getSiteZh } from "@/lib/serverData";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,24 +19,29 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: {
-    default: siteZh.siteName,
-    template: `%s | ${siteZh.siteName}`,
-  },
-  description: "我的电脑项目文件浏览及下载",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
-  alternates: { canonical: "/" },
-  themeColor: "black",
-  openGraph: {
-    title: siteZh.siteName,
+export const dynamic = "force-dynamic";
+
+export function generateMetadata(): Metadata {
+  const siteZh = getSiteZh();
+  return {
+    title: {
+      default: siteZh.siteName,
+      template: `%s | ${siteZh.siteName}`,
+    },
     description: "我的电脑项目文件浏览及下载",
-    url: "/",
-    siteName: siteZh.siteName,
-    locale: "zh_CN",
-    type: "website",
-  },
-};
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+    alternates: { canonical: "/" },
+    themeColor: "black",
+    openGraph: {
+      title: siteZh.siteName,
+      description: "我的电脑项目文件浏览及下载",
+      url: "/",
+      siteName: siteZh.siteName,
+      locale: "zh_CN",
+      type: "website",
+    },
+  };
+}
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -48,8 +54,12 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const siteZh = getSiteZh();
+  const siteEn = getSiteEn();
+  const siteLinks = getSiteLinks();
+
   return (
-    <html lang="zh-CN" className="dark">
+    <html lang="zh-CN">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
@@ -58,10 +68,11 @@ export default function RootLayout({
         </a>
         <header className="sticky top-0 z-50 border-b bg-background/70 backdrop-blur">
           <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
-            <SiteBrandLink />
+            <SiteBrandLink zh={siteZh} en={siteEn} />
             <div className="hidden md:flex items-center gap-2">
               <LangSwitcher />
               <ThemeToggle />
+              <MoreFeatures />
             </div>
             <div className="md:hidden">
               <details>
@@ -69,7 +80,7 @@ export default function RootLayout({
                   <Menu className="h-5 w-5" />
                 </summary>
                 <div className="absolute right-4 mt-2 w-fit rounded-md border bg-background shadow">
-                  <div className="flex flex-col items-center gap-2 px-2 py-2"><LangSwitcher /><ThemeToggle /></div>
+                  <div className="flex flex-col items-center gap-2 px-2 py-2"><LangSwitcher /><ThemeToggle /><MoreFeatures /></div>
                 </div>
               </details>
             </div>
@@ -78,7 +89,7 @@ export default function RootLayout({
         <main id="main" className="flex-1">{children}</main>
         <footer className="border-t">
           <div className="mx-auto max-w-6xl px-4 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} <SiteOwnerName /></p>
+            <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} <SiteOwnerName zh={siteZh} en={siteEn} /></p>
             <div className="flex items-center gap-4">
               <Link href={siteLinks.email} aria-label="Email" className="hover:text-primary">
                 <Mail className="h-5 w-5" />

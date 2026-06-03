@@ -1,8 +1,11 @@
 import Link from "next/link";
 import ShapeGrid from "@/components/ShapeGrid";
-import { siteEn } from "@/lib/data";
+import { getSiteEn } from "@/lib/serverData";
+
+export const dynamic = "force-dynamic";
 
 export default function HomeEN() {
+  const siteEn = getSiteEn();
   return (
     <div className="relative h-[88vh] w-full bg-background">
       <ShapeGrid

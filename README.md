@@ -1,4 +1,4 @@
-# FronterPage
+# GotYourFiles
 
 这是一个基于 [Next.js](https://nextjs.org) 的项目，用于展示项目列表、浏览目录并提供下载与下载日志查询功能。
 

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import DownloadLogsViewer from "@/components/DownloadLogsViewer";
-import { projectsZh } from "@/lib/data";
+import { getProjectsZh } from "@/lib/serverData";
 
 type SearchParams = {
   projectId?: string | string[];
@@ -34,7 +34,7 @@ export default async function DownloadLogsPage({
       </div>
 
       <DownloadLogsViewer
-        projects={projectsZh.map((project) => ({ id: project.id, title: project.title }))}
+        projects={getProjectsZh().map((project) => ({ id: project.id, title: project.title }))}
         initialProjectId={initialProjectId}
         labels={{
           heading: "筛选与日志明细",
@@ -64,6 +64,12 @@ export default async function DownloadLogsPage({
           previous: "上一页",
           next: "下一页",
           pageInfo: "第 {page} / {totalPages} 页",
+          heatmapTitle: "下载活跃热力图（{year}年）",
+          heatmapLess: "少",
+          heatmapMore: "多",
+          heatmapActiveDays: "活跃天数",
+          heatmapTooltipDate: "日期",
+          heatmapTooltipCount: "下载次数",
         }}
       />
     </section>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import DownloadLogsViewer from "@/components/DownloadLogsViewer";
-import { projectsEn } from "@/lib/data";
+import { getProjectsEn } from "@/lib/serverData";
 
 type SearchParams = {
   projectId?: string | string[];
@@ -34,7 +34,7 @@ export default async function DownloadLogsPageEN({
       </div>
 
       <DownloadLogsViewer
-        projects={projectsEn.map((project) => ({ id: project.id, title: project.title }))}
+        projects={getProjectsEn().map((project) => ({ id: project.id, title: project.title }))}
         initialProjectId={initialProjectId}
         labels={{
           heading: "Filters and Details",
@@ -64,6 +64,12 @@ export default async function DownloadLogsPageEN({
           previous: "Previous",
           next: "Next",
           pageInfo: "Page {page} / {totalPages}",
+          heatmapTitle: "Download Activity Heatmap ({year})",
+          heatmapLess: "Less",
+          heatmapMore: "More",
+          heatmapActiveDays: "Active days",
+          heatmapTooltipDate: "Date",
+          heatmapTooltipCount: "Downloads",
         }}
       />
     </section>

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import ShapeGrid from "@/components/ShapeGrid";
-import { siteZh } from "@/lib/data";
+import { getSiteZh } from "@/lib/serverData";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   alternates: {
@@ -14,6 +16,7 @@ export const metadata: Metadata = {
 };
 
 export default function Home() {
+  const siteZh = getSiteZh();
   return (
     <div className="relative h-[88vh] w-full bg-background">
       <ShapeGrid

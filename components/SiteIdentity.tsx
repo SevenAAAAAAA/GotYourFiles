@@ -1,22 +1,27 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { siteEn, siteZh } from "@/lib/data";
+import type { SiteLocale } from "@/lib/data";
 
-export function SiteBrandLink() {
+type SiteIdentityProps = {
+  zh: SiteLocale;
+  en: SiteLocale;
+};
+
+export function SiteBrandLink({ zh, en }: SiteIdentityProps) {
   const pathname = usePathname() || "/";
   const isEN = pathname.startsWith("/en");
 
   return (
     <Link href={isEN ? "/en" : "/"} className="text-base font-semibold">
-      {isEN ? siteEn.siteName : siteZh.siteName}
+      {isEN ? en.siteName : zh.siteName}
     </Link>
   );
 }
 
-export function SiteOwnerName() {
+export function SiteOwnerName({ zh, en }: SiteIdentityProps) {
   const pathname = usePathname() || "/";
   const isEN = pathname.startsWith("/en");
 
-  return <>{isEN ? siteEn.ownerName : siteZh.ownerName}</>;
+  return <>{isEN ? en.ownerName : zh.ownerName}</>;
 }

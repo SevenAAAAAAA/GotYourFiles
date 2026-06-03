@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { projectsZh } from "@/lib/data";
+import { getProjectsZh } from "@/lib/serverData";
 
 export const metadata: Metadata = {
   title: "项目",
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   },
 };
 
-const projects = projectsZh;
+const projects = getProjectsZh();
 
 export default function ProjectsPage() {
   return (
@@ -21,6 +21,9 @@ export default function ProjectsPage() {
       <div className="mb-6 flex items-center justify-between gap-3">
         <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">项目</h1>
         <div className="flex items-center gap-4 text-sm">
+          <Link href="/projects/settings" className="text-primary hover:underline">
+            项目配置
+          </Link>
           <Link href="/projects/logs" className="text-primary hover:underline">
             下载日志
           </Link>

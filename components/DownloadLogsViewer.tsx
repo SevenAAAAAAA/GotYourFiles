@@ -17,12 +17,19 @@ type DownloadLogRow = {
   status: "started" | "failed";
 };
 
+type DailyCount = {
+  date: string;
+  count: number;
+};
+
 type DownloadLogResponse = {
   page: number;
   pageSize: number;
   total: number;
   totalPages: number;
   hasMore: boolean;
+  dailyCounts: DailyCount[];
+  maxDailyCount: number;
   data: DownloadLogRow[];
 };
 
@@ -57,6 +64,12 @@ type DownloadLogsViewerProps = {
     previous: string;
     next: string;
     pageInfo: string;
+    heatmapTitle: string;
+    heatmapLess: string;
+    heatmapMore: string;
+    heatmapActiveDays: string;
+    heatmapTooltipDate: string;
+    heatmapTooltipCount: string;
   };
 };
 
@@ -87,14 +100,22 @@ export default function DownloadLogsViewer({ projects, initialProjectId = "", la
     total: 0,
     totalPages: 0,
     hasMore: false,
+    dailyCounts: [],
+    maxDailyCount: 0,
     data: [],
   });
+  const [heatTooltip, setHeatTooltip] = useState<null | { x: number; y: number; date: string; count: number }>(null);
 
   const pageSizeOptions = useMemo(() => [20, 50, 100], []);
   const safariFilterPanelStyle = isSafari ? { paddingTop: "1.25rem", paddingBottom: "1.25rem" } : undefined;
   const safariFilterActionsStyle = isSafari ? { paddingTop: "0.9375rem", paddingBottom: "0.9375rem" } : undefined;
   const inputClassName = "h-10 w-full rounded-md border bg-background px-3 text-sm";
   const selectClassName = `${inputClassName} pr-9`;
+  const heatmapYear = useMemo(() => new Date().getFullYear(), []);
+  const heatmapTitle = useMemo(
+    () => labels.heatmapTitle.replace("{year}", String(heatmapYear)),
+    [labels.heatmapTitle, heatmapYear],
+  );
   const selectStyle = {
     WebkitAppearance: "none" as const,
     MozAppearance: "none" as const,
@@ -105,6 +126,56 @@ export default function DownloadLogsViewer({ projects, initialProjectId = "", la
     backgroundPosition: "right 0.75rem center",
     backgroundSize: "12px 12px",
   };
+  const HEAT_CELL = 12;
+  const HEAT_GAP = 3;
+  const HEAT_MONTH_ROW = 14;
+  const HEAT_COLORS = ["#ebedf0", "#9be9a8", "#40c463", "#30a14e", "#216e39"];
+  const dayNameByIndex = useMemo(() => ["周一", "周二", "周三", "周四", "周五", "周六", "周日"], []);
+  const heatmap = useMemo(() => {
+    const dateCountMap = new Map(result.dailyCounts.map((item) => [item.date, item.count]));
+    const yearStart = new Date(Date.UTC(heatmapYear, 0, 1));
+    const yearEnd = new Date(Date.UTC(heatmapYear, 11, 31));
+    const startWeekdayMon0 = (yearStart.getUTCDay() + 6) % 7;
+    const endWeekdayMon0 = (yearEnd.getUTCDay() + 6) % 7;
+    const gridStart = new Date(yearStart.getTime() - startWeekdayMon0 * 24 * 60 * 60 * 1000);
+    const gridEnd = new Date(yearEnd.getTime() + (6 - endWeekdayMon0) * 24 * 60 * 60 * 1000);
+    const totalDays = Math.round((gridEnd.getTime() - gridStart.getTime()) / (24 * 60 * 60 * 1000)) + 1;
+    const weekCount = Math.ceil(totalDays / 7);
+
+    const toDateKeyUTC = (d: Date) =>
+      `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
+
+    const weeks = Array.from({ length: weekCount }, (_, weekIndex) =>
+      Array.from({ length: 7 }, (_, dayIndex) => {
+        const d = new Date(gridStart.getTime() + (weekIndex * 7 + dayIndex) * 24 * 60 * 60 * 1000);
+        const dateKey = toDateKeyUTC(d);
+        const count = dateCountMap.get(dateKey) ?? 0;
+        const inTargetYear = d.getUTCFullYear() === heatmapYear;
+        return { date: d, dateKey, count, inTargetYear };
+      }),
+    );
+
+    const monthLabels = Array.from({ length: weekCount }, () => "");
+    for (let month = 0; month < 12; month++) {
+      const first = new Date(Date.UTC(heatmapYear, month, 1));
+      const col = Math.floor((first.getTime() - gridStart.getTime()) / (7 * 24 * 60 * 60 * 1000));
+      if (col >= 0 && col < weekCount) {
+        monthLabels[col] = `${month + 1}月`;
+      }
+    }
+
+    const maxDailyCount = result.dailyCounts.reduce((max, item) => Math.max(max, item.count), 0);
+    return { weeks, monthLabels, maxDailyCount };
+  }, [result.dailyCounts, heatmapYear]);
+
+  function getHeatLevel(count: number, max: number) {
+    if (count <= 0 || max <= 0) return 0;
+    const ratio = count / max;
+    if (ratio >= 0.75) return 4;
+    if (ratio >= 0.5) return 3;
+    if (ratio >= 0.25) return 2;
+    return 1;
+  }
 
   useEffect(() => {
     const ua = navigator.userAgent;
@@ -289,6 +360,120 @@ export default function DownloadLogsViewer({ projects, initialProjectId = "", la
         </button>
         <span className="text-sm text-muted-foreground">{labels.totalPrefix}{result.total}</span>
       </div>
+
+      <div className="border-b px-4 py-4">
+        <div className="mb-3 flex items-center justify-between">
+          <div className="text-sm font-medium">{heatmapTitle}</div>
+          <div className="text-xs text-muted-foreground">{labels.heatmapActiveDays}: {result.dailyCounts.length}</div>
+        </div>
+        <div className="rounded-lg border bg-[#0d1117] p-3">
+          <div className="overflow-x-auto">
+            <div className="inline-flex min-w-max gap-2">
+              <div
+                className="grid text-[10px] text-[#8b949e]"
+                style={{
+                  paddingTop: `${HEAT_MONTH_ROW + HEAT_GAP}px`,
+                  gridTemplateRows: `repeat(7, ${HEAT_CELL}px)`,
+                  rowGap: `${HEAT_GAP}px`,
+                }}
+              >
+              {dayNameByIndex.map((name, idx) => (
+                <div key={name} className="leading-none" style={{ height: `${HEAT_CELL}px` }}>
+                  {idx === 0 || idx === 2 || idx === 4 ? name : ""}
+                </div>
+              ))}
+              </div>
+              <div>
+                <div
+                  className="mb-1 grid text-[10px] text-[#8b949e]"
+                  style={{
+                    height: `${HEAT_MONTH_ROW}px`,
+                    gridTemplateColumns: `repeat(${heatmap.weeks.length}, ${HEAT_CELL}px)`,
+                    columnGap: `${HEAT_GAP}px`,
+                  }}
+                >
+                  {heatmap.monthLabels.map((label, idx) => (
+                    <div key={`${label}-${idx}`} className="overflow-visible whitespace-nowrap leading-none">
+                      {label}
+                    </div>
+                  ))}
+                </div>
+                <div
+                  className="grid"
+                  style={{
+                    gridAutoFlow: "column",
+                    gridTemplateRows: `repeat(7, ${HEAT_CELL}px)`,
+                    gridAutoColumns: `${HEAT_CELL}px`,
+                    gap: `${HEAT_GAP}px`,
+                  }}
+                >
+                  {heatmap.weeks.flatMap((week) =>
+                    week.map((cell) => {
+                    const level = getHeatLevel(cell.count, heatmap.maxDailyCount);
+                      return (
+                        <div
+                          key={cell.dateKey}
+                          className="rounded-sm border"
+                        style={{
+                          borderColor: "#d0d7de",
+                            backgroundColor: cell.inTargetYear ? HEAT_COLORS[level] : "#f6f8fa",
+                        }}
+                          onMouseEnter={(event) =>
+                            setHeatTooltip({
+                              x: event.clientX + 10,
+                              y: event.clientY + 10,
+                              date: cell.dateKey,
+                              count: cell.count,
+                            })
+                          }
+                          onMouseMove={(event) =>
+                            setHeatTooltip((prev) =>
+                              prev
+                                ? {
+                                    ...prev,
+                                    x: event.clientX + 10,
+                                    y: event.clientY + 10,
+                                  }
+                                : prev,
+                            )
+                          }
+                          onMouseLeave={() => setHeatTooltip(null)}
+                        />
+                      );
+                    }),
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="mt-3 flex items-center justify-end gap-2 text-[11px] text-[#8b949e]">
+            <span>{labels.heatmapLess}</span>
+            {HEAT_COLORS.map((color, idx) => (
+              <div
+                key={`${color}-${idx}`}
+                className="block rounded-sm border"
+                style={{ width: "14px", height: "14px", borderColor: "#d0d7de", backgroundColor: color }}
+              />
+            ))}
+            <span>{labels.heatmapMore}</span>
+          </div>
+        </div>
+      </div>
+      {heatTooltip && (
+        <div
+          className="pointer-events-none fixed z-50 rounded-md border px-2 py-1.5 text-xs text-white shadow-lg"
+          style={{
+            left: `${heatTooltip.x}px`,
+            top: `${heatTooltip.y}px`,
+            backgroundColor: "#0d1117",
+            borderColor: "#30363d",
+            opacity: 1,
+          }}
+        >
+          <div>{labels.heatmapTooltipDate}: {heatTooltip.date}</div>
+          <div>{labels.heatmapTooltipCount}: {heatTooltip.count}</div>
+        </div>
+      )}
 
       {loading ? <p className="px-4 py-4 text-sm text-muted-foreground">{labels.loading}</p> : null}
       {error ? <p className="px-4 py-4 text-sm text-destructive">{error}</p> : null}

@@ -11,6 +11,11 @@ type DownloadLogEvent = {
   status: "started" | "failed";
 };
 
+type DailyCount = {
+  date: string;
+  count: number;
+};
+
 const DOWNLOAD_LOG_FILE = process.env.DOWNLOAD_LOG_FILE ?? path.join(process.cwd(), "download-events.log");
 const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 20;
@@ -52,6 +57,14 @@ function isDownloadLogEvent(value: unknown): value is DownloadLogEvent {
     (item.targetType === "file" || item.targetType === "folder") &&
     (item.status === "started" || item.status === "failed")
   );
+}
+
+function toDateKey(timestampMs: number) {
+  const d = new Date(timestampMs);
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(d.getUTCDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 export async function GET(request: Request) {
@@ -122,6 +135,15 @@ export async function GET(request: Request) {
     .sort((a, b) => b.timestampMs - a.timestampMs);
 
   const total = records.length;
+  const dailyCountMap = new Map<string, number>();
+  for (const entry of records) {
+    const key = toDateKey(entry.timestampMs);
+    dailyCountMap.set(key, (dailyCountMap.get(key) ?? 0) + 1);
+  }
+  const dailyCounts: DailyCount[] = Array.from(dailyCountMap.entries())
+    .map(([date, count]) => ({ date, count }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+  const maxDailyCount = dailyCounts.reduce((max, item) => Math.max(max, item.count), 0);
   const totalPages = total === 0 ? 0 : Math.ceil(total / pageSize);
   const start = (page - 1) * pageSize;
   const data = records.slice(start, start + pageSize).map((entry) => ({
@@ -140,6 +162,8 @@ export async function GET(request: Request) {
     total,
     totalPages,
     hasMore: page < totalPages,
+    dailyCounts,
+    maxDailyCount,
     data,
   });
 }

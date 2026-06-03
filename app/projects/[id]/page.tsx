@@ -3,7 +3,7 @@ import Link from "next/link";
 import path from "node:path";
 import { readdir, stat } from "node:fs/promises";
 import { notFound } from "next/navigation";
-import { projectsZh, shouldIgnoreDirectoryEntry } from "@/lib/data";
+import { getProjectsZh, shouldIgnoreDirectoryEntry } from "@/lib/serverData";
 import DirectoryEntriesList from "@/components/DirectoryEntriesList";
 
 type Params = {
@@ -15,7 +15,7 @@ type SearchParams = {
 };
 
 export async function generateStaticParams() {
-  return projectsZh.map((project) => ({ id: project.id }));
+  return getProjectsZh().map((project) => ({ id: project.id }));
 }
 
 export async function generateMetadata({
@@ -24,7 +24,7 @@ export async function generateMetadata({
   params: Promise<Params>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const project = projectsZh.find((item) => item.id === id);
+  const project = getProjectsZh().find((item) => item.id === id);
 
   if (!project) {
     return { title: "项目不存在" };
@@ -44,7 +44,7 @@ export default async function ProjectFolderPage({
 }) {
   const { id } = await params;
   const { p } = await searchParams;
-  const project = projectsZh.find((item) => item.id === id);
+  const project = getProjectsZh().find((item) => item.id === id);
 
   if (!project) {
     notFound();
@@ -107,6 +107,12 @@ export default async function ProjectFolderPage({
               返回上一级
             </Link>
           ) : null}
+          <Link
+            href={currentRelative ? { pathname: `/projects/${id}/commits`, query: { p: currentRelative } } : `/projects/${id}/commits`}
+            className="text-primary hover:underline"
+          >
+            本地提交
+          </Link>
           <Link href={{ pathname: "/projects/logs", query: { projectId: id } }} className="text-primary hover:underline">
             下载日志
           </Link>
@@ -138,6 +144,10 @@ export default async function ProjectFolderPage({
           filterAllLabel="全部类型"
           filterFilesLabel="仅文件"
           filterFoldersLabel="仅文件夹"
+          sortLabel="排序"
+          sortByNameLabel="首字母"
+          sortByModifiedLabel="时间"
+          sortBySizeLabel="文件大小"
         />
       )}
     </section>

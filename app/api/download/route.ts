@@ -3,20 +3,29 @@ import { createReadStream } from "node:fs";
 import { appendFile, readdir, stat } from "node:fs/promises";
 import path from "node:path";
 import { PassThrough, Readable } from "node:stream";
-import { projectsEn, projectsZh, shouldIgnoreDirectoryEntry } from "@/lib/data";
+import { getProjectsEn, getProjectsZh, shouldIgnoreDirectoryEntry } from "@/lib/serverData";
 
 const RATE_LIMIT_WINDOW_MS = Number(process.env.DOWNLOAD_RATE_LIMIT_WINDOW_MS ?? "60000");
 const RATE_LIMIT_MAX_REQUESTS = Number(process.env.DOWNLOAD_RATE_LIMIT_MAX_REQUESTS ?? "30");
-const ZIP_TIMEOUT_MS = Number(process.env.DOWNLOAD_ZIP_TIMEOUT_MS ?? "60000");
+const ZIP_TIMEOUT_MS = Number(process.env.DOWNLOAD_ZIP_TIMEOUT_MS ?? "0");
 const FOLDER_SIZE_CACHE_TTL_MS = Number(process.env.FOLDER_SIZE_CACHE_TTL_MS ?? "600000");
 const FOLDER_SIZE_TIMEOUT_MS = Number(process.env.FOLDER_SIZE_TIMEOUT_MS ?? "20000");
 const DOWNLOAD_LOG_FILE = process.env.DOWNLOAD_LOG_FILE ?? path.join(process.cwd(), "download-events.log");
 const rateLimitStore = new Map<string, number[]>();
 const folderSizeCache = new Map<string, { sizeBytes: number; expiresAt: number }>();
 const folderSizeInFlight = new Map<string, Promise<number>>();
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET,OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+function withCors(headers?: HeadersInit): HeadersInit {
+  return { ...CORS_HEADERS, ...(headers ?? {}) };
+}
 
 function getProjectById(id: string) {
-  return projectsZh.find((project) => project.id === id) ?? projectsEn.find((project) => project.id === id);
+  return getProjectsZh().find((project) => project.id === id) ?? getProjectsEn().find((project) => project.id === id);
 }
 
 function normalizeRelativePath(raw: string) {
@@ -144,38 +153,38 @@ export async function GET(request: Request) {
   const mode = searchParams.get("mode");
 
   if (!id) {
-    return new Response("Missing id", { status: 400 });
+    return new Response("Missing id", { status: 400, headers: withCors() });
   }
 
   const clientIp = getClientIp(request);
   if (isRateLimited(clientIp)) {
-    return new Response("Too many requests", { status: 429 });
+    return new Response("Too many requests", { status: 429, headers: withCors() });
   }
 
   const project = getProjectById(id);
 
   if (!project) {
-    return new Response("Project not found", { status: 404 });
+    return new Response("Project not found", { status: 404, headers: withCors() });
   }
 
   const rootPath = path.resolve(project.link);
   const safeRelative = normalizeRelativePath(rawRelative);
 
   if (safeRelative && hasIgnoredSegment(safeRelative)) {
-    return new Response("Forbidden", { status: 403 });
+    return new Response("Forbidden", { status: 403, headers: withCors() });
   }
 
   const targetPath = path.resolve(rootPath, safeRelative);
 
   if (!isPathInsideRoot(rootPath, targetPath)) {
-    return new Response("Forbidden", { status: 403 });
+    return new Response("Forbidden", { status: 403, headers: withCors() });
   }
 
   let stats;
   try {
     stats = await stat(targetPath);
   } catch {
-    return new Response("Not found", { status: 404 });
+    return new Response("Not found", { status: 404, headers: withCors() });
   }
 
   const downloadName = path.basename(targetPath) || `${project.id}`;
@@ -190,10 +199,10 @@ export async function GET(request: Request) {
     });
     const fileStream = createReadStream(targetPath);
     return new Response(Readable.toWeb(fileStream) as ReadableStream, {
-      headers: {
+      headers: withCors({
         "Content-Type": "application/octet-stream",
         "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(downloadName)}`,
-      },
+      }),
     });
   }
 
@@ -210,9 +219,9 @@ export async function GET(request: Request) {
             }, FOLDER_SIZE_TIMEOUT_MS);
           }),
         ]);
-        return Response.json({ sizeBytes }, { status: 200 });
+        return Response.json({ sizeBytes }, { status: 200, headers: withCors() });
       } catch {
-        return Response.json({ error: "Folder size timeout" }, { status: 504 });
+        return Response.json({ error: "Folder size timeout" }, { status: 504, headers: withCors() });
       }
     }
     const parentDir = path.dirname(targetPath);
@@ -230,14 +239,19 @@ export async function GET(request: Request) {
       cwd: parentDir,
       stdio: ["ignore", "pipe", "pipe"],
     });
-    const timeout = setTimeout(() => {
-      zip.kill("SIGTERM");
-      output.destroy(new Error("Compression timeout"));
-    }, ZIP_TIMEOUT_MS);
+    const timeout = ZIP_TIMEOUT_MS > 0
+      ? setTimeout(() => {
+          zip.kill("SIGTERM");
+          output.destroy(new Error("Compression timeout"));
+        }, ZIP_TIMEOUT_MS)
+      : null;
 
+    zip.stderr.resume();
     zip.stdout.pipe(output);
     zip.on("error", async () => {
-      clearTimeout(timeout);
+      if (timeout) {
+        clearTimeout(timeout);
+      }
       output.destroy(new Error("Compression failed"));
       await writeDownloadLog({
         request,
@@ -248,7 +262,9 @@ export async function GET(request: Request) {
       });
     });
     zip.on("exit", async (code, signal) => {
-      clearTimeout(timeout);
+      if (timeout) {
+        clearTimeout(timeout);
+      }
       if (signal || (code !== null && code !== 0)) {
         output.destroy(new Error("Compression failed"));
         await writeDownloadLog({
@@ -262,18 +278,24 @@ export async function GET(request: Request) {
     });
 
     request.signal.addEventListener("abort", () => {
-      clearTimeout(timeout);
+      if (timeout) {
+        clearTimeout(timeout);
+      }
       zip.kill("SIGTERM");
       output.destroy(new Error("Client aborted"));
     });
 
     return new Response(Readable.toWeb(output) as ReadableStream, {
-      headers: {
+      headers: withCors({
         "Content-Type": "application/zip",
         "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(archiveName)}`,
-      },
+      }),
     });
   }
 
-  return new Response("Unsupported target", { status: 400 });
+  return new Response("Unsupported target", { status: 400, headers: withCors() });
+}
+
+export async function OPTIONS() {
+  return new Response(null, { status: 204, headers: withCors() });
 }
